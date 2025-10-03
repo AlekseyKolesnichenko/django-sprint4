@@ -19,7 +19,7 @@ class PostAdmin(admin.ModelAdmin):
 
     search_fields = ('title',)
     list_filter = ('category', 'location')
-    list_display_links = ('title',)
+    list_display_links = ('title', )
 
 
 class CategoryAdmin(admin.ModelAdmin):
