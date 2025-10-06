@@ -26,9 +26,9 @@ def get_posts(add_filter=False, add_comments=False):
             pub_date__lte=timezone.now())
     if add_comments:
         query_set = query_set.annotate(
-            comment_count=Count('comments'))
+            comment_count=Count('comments')).order_by('-pub_date')
 
-    return query_set.order_by('-pub_date')
+    return query_set
 
 
 class Index(ListView):
@@ -60,10 +60,9 @@ class CategoryPosts(ListView):
 
     def get_category(self):
         """Получение категории"""
-        category = get_object_or_404(
+        return get_object_or_404(
             Category, slug=self.kwargs.get(
                 'category_slug'), is_published=True)
-        return category
 
 
 class PostCreateView(LoginRequiredMixin, CreateView):
@@ -172,10 +171,8 @@ class ProfileUser(ListView):
 
     def get_queryset(self):
         user = self.get_user()
-        if self.request.user == user:
-            query_set = get_posts(add_filter=False, add_comments=False)
-        else:
-            query_set = get_posts(add_filter=True, add_comments=True)
+        query_set = get_posts(
+            add_filter=self.request.user != user, add_comments=True)
         return query_set.filter(author=user)
 
     def get_context_data(self, **kwargs):
@@ -185,8 +182,8 @@ class ProfileUser(ListView):
 
     def get_user(self):
         """Получение объекта пользователя"""
-        username = self.kwargs.get('username')
-        return get_object_or_404(get_user_model(), username=username)
+        return get_object_or_404(get_user_model(),
+                                 username=self.kwargs.get('username'))
 
 
 class EditProfileView(LoginRequiredMixin, UpdateView):
